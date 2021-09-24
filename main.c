@@ -28,7 +28,7 @@ typedef struct
 int random_number(int min_num, int max_num);
 int check_levelUp(Personnage *data);
 void load_game(Personnage *data, char filename[20]);
-void save_game(Personnage *data);
+void save_game(Personnage *data, char dataFile[20]);
 int main()
 {
     char playerName[20];
@@ -36,7 +36,8 @@ int main()
     char answer[20];
     char filename[20];
     char ext[5] = ".txt";
-    char loadthis[150] = "/Users/ilyasglm/coding18/C_projects/Geek_of_Legends/";
+    char loadthis[150] = "/Users/ilyasglm/coding18/C_projects/Geek_of_Legends/save/";
+    char savethis[150] = "/Users/ilyasglm/coding18/C_projects/Geek_of_Legends/save/";
     char newGame[150] = "/Users/ilyasglm/coding18/C_projects/Geek_of_Legends/new.txt";
     char loadLucky[150] = "/Users/ilyasglm/coding18/C_projects/Geek_of_Legends/lucky.txt";
     Personnage player = {"player", 60, 1, 0, 15, 3};
@@ -51,7 +52,7 @@ int main()
     scanf("%s", answer);
     if (strcmp(answer, "load") == 0)
     {
-        printf("Filename : ");
+        printf("Character name : ");
         scanf("%s", filename);
         strcat(filename, ext);
         strcat(loadthis, filename);
@@ -60,12 +61,15 @@ int main()
     }
     else
     {
+        load_game(&player, newGame);
         printf("Launching new game\n");
         printf("Enter player name : ");
         scanf("%s",playerName);
         printf("\nEnter your lucky number :");
         scanf("%d",&player.lucky);
-        load_game(&player, newGame);
+        strcpy(player.name,playerName);
+        strcat(savethis, playerName);
+        strcat(savethis,".txt");
     }
 
     int action;
@@ -419,6 +423,7 @@ int main()
             for (int i = 0; i < 35; i++)
             {
                 printf(" %d\n", i);
+                sleep(1);
             }
             player.xp += 2;
             player.mp += 1;
@@ -427,14 +432,15 @@ int main()
             printf("Status : \nLevel : %d\nxp : %d\nhp : %d\nap : %d\nmp : %d\n", player.level, player.xp, player.hp, player.ap, player.mp);
             break;
         case 0:
-            printf("Thanks for playing ! Saving Player\n");
-            save_game(&player);
+            printf("Thanks for playing ! Saving Player in file %s.txt\n",player.name);
+            save_game(&player,savethis);
             return 0;
             break;
         default:
             break;
         }
     }
+    return 0;
 }
 
 int random_number(int min_num, int max_num)
@@ -466,14 +472,14 @@ int check_levelUp(Personnage *data)
     data->def = (data->level * 2);
 }
 
-void load_game(Personnage *data, char filename[20])
+void load_game(Personnage *data, char dataFile[20])
 {
     char str[20];
     int xp, mp;
 
     // open the file
-    FILE *f = fopen(filename, "r");
-    if ((f = fopen("/Users/ilyasglm/coding18/C_projects/Geek_of_Legends/autosave.txt", "r")) == NULL)
+    FILE *f = fopen(dataFile, "r");
+    if ((f = fopen(dataFile, "r")) == NULL)
     {
         printf("\nSave file not found.\n");
         exit(1); // Program exits if file pointer returns NULL.
@@ -488,15 +494,10 @@ void load_game(Personnage *data, char filename[20])
     data->mp = mp;
     check_levelUp(data);
 }
-void save_game(Personnage *data)
+void save_game(Personnage *data, char dataFile[20])
 {
     // open the file
-    FILE *f = fopen("/Users/ilyasglm/coding18/C_projects/Geek_of_Legends/autosave.txt", "w");
-    if ((f = fopen("/Users/ilyasglm/coding18/C_projects/Geek_of_Legends/autosave.txt", "w")) == NULL)
-    {
-        printf("\nSave file not found.\n");
-        exit(1); // Program exits if file pointer returns NULL.
-    }
+    FILE *f = fopen(dataFile, "w");
     fprintf(f, "%s\n", data->name);
     fprintf(f, "%d\n", data->xp);
     fprintf(f, "%d\n", data->mp);
