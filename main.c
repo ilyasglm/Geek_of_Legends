@@ -26,7 +26,7 @@ typedef struct
     int def;       //Defense points based on the grade
 } Monster;
 int random_number(int min_num, int max_num);
-int check_levelUp(Personnage *data);
+void check_levelUp(Personnage *data);
 void load_game(Personnage *data, char filename[20]);
 void save_game(Personnage *data, char dataFile[20]);
 int main()
@@ -58,18 +58,19 @@ int main()
         strcat(loadthis, filename);
         load_game(&player, loadthis);
         printf("Loading game\n");
+        strcat(savethis, filename);
     }
     else
     {
         load_game(&player, newGame);
         printf("Launching new game\n");
         printf("Enter player name : ");
-        scanf("%s",playerName);
+        scanf("%s", playerName);
         printf("\nEnter your lucky number :");
-        scanf("%d",&player.lucky);
-        strcpy(player.name,playerName);
+        scanf("%d", &player.lucky);
+        strcpy(player.name, playerName);
         strcat(savethis, playerName);
-        strcat(savethis,".txt");
+        strcat(savethis, ".txt");
     }
 
     int action;
@@ -146,54 +147,64 @@ int main()
                         printf("%d \n", i);
                         sleep(1);
                     }
+                    int temp1 = 0;
                     int loser = 0;
-                    while (player.hp > 0 || bgrade.hp > 0 || loser == 0)
+                    do
                     {
                         char fightAnswer[20];
-                        printf("Your turn : \n  --attack : target - %d HP\n  --block : your hp - ((%d - %d)/2)\n  --RUN : 1/3 chance of escaping.\n", player.ap, bgrade.ap, player.def);
+                        printf("Your turn : \n  --attack : target - %d HP\n  --block : your hp - ((%d - %d)/2)\n  --run : 1/3 chance of escaping.\n  --ult : Ultimate skill, need to block 1 turn to get powered up .\n", player.ap, bgrade.ap, player.def);
                         scanf("%s", fightAnswer);
                         int temp = 0;
+
                         do
                         {
                             if (strcmp(fightAnswer, "attack") == 0)
                             {
                                 temp = 1;
-                                if (powerUp == 0)
-                                {
-                                    printf("%s ults %s and does %d dmg.\n", player.name, bgrade.name, player.ult);
-                                    bgrade.hp -= player.ap;
-                                    sleep(1);
-                                    printf("It's %s's time to attack\n", bgrade.name);
-                                    printf("%s attacks %s and does %d dmg.\n", bgrade.name, player.name, bgrade.ap);
-                                    player.hp -= bgrade.ap;
-                                }
+                                printf("%s attacks %s and does %d dmg.\n", player.name, bgrade.name, player.ap);
+                                bgrade.hp -= player.ap;
+                                sleep(2);
+                                printf("It's %s's time to attack\n", bgrade.name);
+                                printf("%s attacks %s and does %d dmg.\n", bgrade.name, player.name, bgrade.ap);
+                                printf("%s hp = %d, %s hp = %d.\n",bgrade.name, bgrade.hp, player.name,player.hp);
+                                printf("\n\n\n");
+                                player.hp -= bgrade.ap;
+                            }
+                            if (strcmp(fightAnswer, "ult") == 0)
+                            {
                                 if (powerUp == 1)
                                 {
-                                    player.ult = (player.ap * 2) + (player.ap / 2);
-                                    printf("%s attacks %s and does %d dmg.\n", player.name, bgrade.name, player.ap);
-                                    bgrade.hp -= player.ult;
-                                    sleep(1);
-                                    printf("It's %s's time to attack\n", bgrade.name);
-                                    printf("%s attacks %s and does %d dmg.\n", bgrade.name, player.name, bgrade.ap);
-                                    player.hp -= bgrade.ap;
                                     powerUp = 0;
+                                    player.ult = (player.ap * 2) + (player.ap / 2);
+                                    printf("%s ults %s and does %d dmg.\n", player.name, bgrade.name, player.ult);
+                                    bgrade.hp -= player.ult;
+                                    sleep(2);
+                                    printf("It's %s's time to attack\n", bgrade.name);
+                                    printf("%s attacks %s and does %d dmg.\n\n\n", bgrade.name, player.name, bgrade.ap);
+                                    player.hp -= bgrade.ap;
+                                }
+                                else
+                                {
+                                    printf("You need to block a hit to get powered up !");
                                 }
                             }
-                            if (strcmp(fightAnswer, "block"))
+
+                            if (strcmp(fightAnswer, "block") == 0)
                             {
                                 temp = 1;
                                 printf("%s holds his shield high in order to block the incomming attack\n", player.name);
                                 player.hp -= (player.def - bgrade.ap);
                                 printf("%s attacks %s and does %d dmg.\n", bgrade.name, player.name, (player.def - bgrade.ap));
                                 powerUp = 1;
-                                printf("%s's attack get powered up for 1 turn.\n", player.name);
+                                printf("%s's attack get powered up for 1 turn.\n\n\n", player.name);
+                                sleep(2);
                             }
-                            if (strcmp(fightAnswer, "RUN"))
+                            if (strcmp(fightAnswer, "run") == 0)
                             {
                                 int run = random_number(1, 3);
                                 if (run == 2)
                                 {
-                                    printf("You evaded successfully.\n");
+                                    printf("You evaded successfully.\n\n\n");
                                     temp = 1;
                                     loser = 1;
                                 }
@@ -201,29 +212,37 @@ int main()
                                 {
                                     printf("You failed to run away.\n");
                                     printf("It's %s's time to attack\n", bgrade.name);
-                                    printf("%s attacks %s and does %d dmg.\n", bgrade.name, player.name, bgrade.ap);
+                                    printf("%s attacks %s and does %d dmg.\n\n\n", bgrade.name, player.name, bgrade.ap);
                                     player.hp -= bgrade.ap;
                                 }
                             }
+                            printf("\nplayer HP : %d.\nMonster hp : %d.\n\n\n", player.hp, bgrade.hp);
 
                         } while (temp == 0);
-                    }
-                    if (player.hp >= 0 && bgrade.hp <= 0)
-                    {
-                        printf("You have killed %s and gained 4xp points. \n", bgrade.name);
-                        player.xp += 4;
-                    }
-                    else if (player.hp <= 0 && bgrade.hp >= 0)
-                    {
-                        printf("%s has killed you, you lost 4xp points.\n", bgrade.name);
-                        player.xp -= 4;
-                    }
-                    if (loser == 1)
-                    {
-                        printf("You evaded the combat. you didn't lose or gain anything.\nJust lost your dignity...\n");
-                    }
-                    player.mp -= 1;
-                    check_levelUp(&player);
+                        if (player.hp < 0 || bgrade.hp < 0 || loser == 1)
+                        {
+                            system("clear");
+                            temp1 = 1;
+                            if (player.hp > 0 && bgrade.hp <= 0)
+                            {
+                                printf("You have killed %s and gained 4xp points. \n\n\n", bgrade.name);
+                                player.xp += 4;
+                            }
+                            else if (player.hp <= 0 && bgrade.hp >= 0)
+                            {
+                                printf("%s has killed you, you lost 4xp points.\n\n\n", bgrade.name);
+                                player.xp -= 4;
+                            }
+                            if (loser == 1)
+                            {
+                                printf("You evaded the combat. you didn't lose or gain anything.\nJust lost your dignity...\n\n\n");
+                            }
+                            player.mp -= 1;
+                            check_levelUp(&player);
+                            sleep(3);
+                        }
+
+                    } while (temp1 == 0);
                 }
 
                 if (x > 50 && x <= 80)
@@ -232,10 +251,11 @@ int main()
                     for (int i = 3; i > 0; i--)
                     {
                         printf("%d \n", i);
-                        sleep(1);
+                        sleep(2);
                     }
+                    int temp1 = 0;
                     int loser = 0;
-                    while (player.hp > 0 || agrade.hp > 0 || loser == 0)
+                    do
                     {
                         char fightAnswer[20];
                         printf("Your turn : \n  --attack : target - %d HP\n  --block : your hp - ((%d - %d)/2)\n  --RUN : 1/3 chance of escaping.\n", player.ap, agrade.ap, player.def);
@@ -246,72 +266,81 @@ int main()
                             if (strcmp(fightAnswer, "attack") == 0)
                             {
                                 temp = 1;
-                                if (powerUp == 0)
-                                {
-                                    printf("%s ults %s and does %d dmg.\n", player.name, agrade.name, player.ult);
-                                    agrade.hp -= player.ap;
-                                    sleep(1);
-                                    printf("It's %s's time to attack\n", agrade.name);
-                                    printf("%s attacks %s and does %d dmg.\n", agrade.name, player.name, agrade.ap);
-                                    player.hp -= agrade.ap;
-                                }
+                                printf("%s attacks %s and does %d dmg.\n\n\n", player.name, agrade.name, player.ap);
+                                agrade.hp -= player.ap;
+                                sleep(2);
+                                printf("It's %s's time to attack\n", agrade.name);
+                                printf("%s attacks %s and does %d dmg.\n\n\n", agrade.name, player.name, agrade.ap);
+                                printf("%s hp = %d, %s hp = %d.\n",agrade.name, agrade.hp, player.name,player.hp);
+                                printf("\n\n\n");
+                                player.hp -= agrade.ap;
+                            }
+                            if (strcmp(fightAnswer, "ult") == 0)
+                            {
+                                temp = 1;
                                 if (powerUp == 1)
                                 {
-                                    player.ult = (player.ap * 2) + (player.ap / 2);
-                                    printf("%s attacks %s and does %d dmg.\n", player.name, agrade.name, player.ap);
-                                    agrade.hp -= player.ult;
-                                    sleep(1);
-                                    printf("It's %s's time to attack\n", agrade.name);
-                                    printf("%s attacks %s and does %d dmg.\n", agrade.name, player.name, agrade.ap);
-                                    player.hp -= agrade.ap;
                                     powerUp = 0;
+                                    player.ult = (player.ap * 2) + (player.ap / 2);
+                                    printf("%s ults %s and does %d dmg.\n\n\n", player.name, agrade.name, player.ult);
+                                    agrade.hp -= player.ult;
+                                    sleep(2);
+                                    printf("It's %s's time to attack\n", agrade.name);
+                                    printf("%s attacks %s and does %d dmg.\n\n\n", agrade.name, player.name, agrade.ap);
+                                    player.hp -= agrade.ap;
                                 }
                             }
-                            if (strcmp(fightAnswer, "block"))
+                            if (strcmp(fightAnswer, "block") == 0)
                             {
                                 temp = 1;
                                 printf("%s holds his shield high in order to block the incomming attack\n", player.name);
                                 player.hp -= (player.def - agrade.ap);
-                                printf("%s attacks %s and does %d dmg.\n", agrade.name, player.name, (player.def - agrade.ap));
+                                printf("%s attacks %s and does %d dmg.\n\n\n", agrade.name, player.name, (player.def - agrade.ap));
                                 powerUp = 1;
-                                printf("%s's attack get powered up for 1 turn.\n", player.name);
+                                printf("%s's attack get powered up for 1 turn.\n\n\n", player.name);
                             }
-                            if (strcmp(fightAnswer, "RUN"))
+                            if (strcmp(fightAnswer, "run") == 0)
                             {
                                 int run = random_number(1, 3);
+                                temp = 1;
                                 if (run == 2)
                                 {
-                                    printf("You evaded successfully.\n");
-                                    temp = 1;
+                                    printf("You evaded successfully.\n\n\n");
                                     loser = 1;
                                 }
                                 else
                                 {
-                                    printf("You failed to run away.\n");
-                                    printf("It's %s's time to attack\n", agrade.name);
-                                    printf("%s attacks %s and does %d dmg.\n", agrade.name, player.name, agrade.ap);
+                                    printf("You failed to run away.\n\n");
+                                    printf("It's %s's time to attack\n\n", agrade.name);
+                                    printf("%s attacks %s and does %d dmg.\n\n\n", agrade.name, player.name, agrade.ap);
                                     player.hp -= agrade.ap;
                                 }
                             }
 
                         } while (temp == 0);
-                    }
-                    if (player.hp >= 0 && agrade.hp <= 0)
-                    {
-                        printf("You have killed %s and gained 4xp points. \n", agrade.name);
-                        player.xp += 12;
-                    }
-                    else if (player.hp <= 0 && agrade.hp >= 0)
-                    {
-                        printf("%s has killed you, you lost 4xp points.\n", agrade.name);
-                        player.xp -= 12;
-                    }
-                    if (loser == 1)
-                    {
-                        printf("You evaded the combat. you didn't lose or gain anything.\nJust lost your dignity...\n");
-                    }
-                    player.mp -= 1;
-                    check_levelUp(&player);
+                        if (player.hp < 0 || agrade.hp < 0 || loser == 1)
+                        {
+                            system("clear");
+                            temp1 = 1;
+                            if (player.hp > 0 && agrade.hp <= 0)
+                            {
+                                printf("You have killed %s and gained 4xp points. \n\n\n", agrade.name);
+                                player.xp += 12;
+                            }
+                            else if (player.hp <= 0 && agrade.hp >= 0)
+                            {
+                                printf("%s has killed you, you lost 4xp points.\n\n\n", agrade.name);
+                                player.xp -= 12;
+                            }
+                            if (loser == 1)
+                            {
+                                printf("You evaded the combat. you didn't lose or gain anything.\nJust lost your dignity...\n\n\n");
+                            }
+                            player.mp -= 1;
+                            check_levelUp(&player);
+                            sleep(3);
+                        }
+                    } while (temp1 == 0);
                 }
 
                 if (x > 80)
@@ -325,16 +354,18 @@ int main()
                     else
                     {
                         printf("You found an S grade (%s) monster to fight. The fight is starting in 3 seconds get ready to RUMBLE !\n", sgrade.name);
+                        printf("%d",luckyNumber);
                         for (int i = 3; i > 0; i--)
                         {
                             printf("%d \n", i);
-                            sleep(1);
+                            sleep(2);
                         }
                         int loser = 0;
-                        while (player.hp > 0 || sgrade.hp > 0 || loser == 0)
+                        int temp1 = 0;
+                        do
                         {
                             char fightAnswer[20];
-                            printf("Your turn : \n  --attack : target - %d HP\n  --block : your hp - ((%d - %d)/2)\n  --RUN : 1/3 chance of escaping.\n", player.ap, sgrade.ap, player.def);
+                            printf("Your turn : \n  --attack : target - %d HP\n  --block : your hp - ((%d - %d)/2)\n  --run : 1/3 chance of escaping.\n  --ult : ultimate blow, need to charge up. %d/1\n", player.ap, sgrade.ap, player.def, powerUp);
                             scanf("%s", fightAnswer);
                             int temp = 0;
                             do
@@ -342,42 +373,49 @@ int main()
                                 if (strcmp(fightAnswer, "attack") == 0)
                                 {
                                     temp = 1;
-                                    if (powerUp == 0)
-                                    {
-                                        printf("%s ults %s and does %d dmg.\n", player.name, sgrade.name, player.ult);
-                                        sgrade.hp -= player.ap;
-                                        sleep(1);
-                                        printf("It's %s's time to attack\n", sgrade.name);
-                                        printf("%s attacks %s and does %d dmg.\n", sgrade.name, player.name, sgrade.ap);
-                                        player.hp -= sgrade.ap;
-                                    }
+                                    printf("%s attacks %s and does %d dmg.\n", player.name, sgrade.name, player.ap);
+                                    sgrade.hp -= player.ap;
+                                    sleep(2);
+                                    printf("It's %s's time to attack\n", sgrade.name);
+                                    printf("%s attacks %s and does %d dmg.\n\n\n", sgrade.name, player.name, sgrade.ap);
+                                    printf("%s hp = %d, %s hp = %d.\n",sgrade.name, sgrade.hp, player.name,player.hp);
+                                printf("\n\n\n");
+                                    player.hp -= sgrade.ap;
+                                }
+                                if (strcmp(fightAnswer, "ult") == 0)
+                                {
+                                    temp = 1;
                                     if (powerUp == 1)
                                     {
                                         player.ult = (player.ap * 2) + (player.ap / 2);
-                                        printf("%s attacks %s and does %d dmg.\n", player.name, sgrade.name, player.ap);
+                                        printf("%s ults %s and does %d dmg.\n", player.name, sgrade.name, player.ult);
                                         sgrade.hp -= player.ult;
-                                        sleep(1);
+                                        sleep(2);
                                         printf("It's %s's time to attack\n", sgrade.name);
-                                        printf("%s attacks %s and does %d dmg.\n", sgrade.name, player.name, sgrade.ap);
+                                        printf("%s attacks %s and does %d dmg.\n\n\n", sgrade.name, player.name, sgrade.ap);
                                         player.hp -= sgrade.ap;
                                         powerUp = 0;
                                     }
+                                    else
+                                    {
+                                        printf("player needs to power up !\n\n\n");
+                                    }
                                 }
-                                if (strcmp(fightAnswer, "block"))
+                                if (strcmp(fightAnswer, "block") == 0)
                                 {
                                     temp = 1;
                                     printf("%s holds his shield high in order to block the incomming attack\n", player.name);
                                     player.hp -= (player.def - sgrade.ap);
                                     printf("%s attacks %s and does %d dmg.\n", sgrade.name, player.name, (player.def - sgrade.ap));
                                     powerUp = 1;
-                                    printf("%s's attack get powered up for 1 turn.\n", player.name);
+                                    printf("%s's attack get powered up for 1 turn.\n\n\n", player.name);
                                 }
-                                if (strcmp(fightAnswer, "RUN"))
+                                if (strcmp(fightAnswer, "RUN") == 0)
                                 {
                                     int run = random_number(1, 3);
                                     if (run == 2)
                                     {
-                                        printf("You evaded successfully.\n");
+                                        printf("You evaded successfully.\n\n\n");
                                         temp = 1;
                                         loser = 1;
                                     }
@@ -385,37 +423,42 @@ int main()
                                     {
                                         printf("You failed to run away.\n");
                                         printf("It's %s's time to attack\n", sgrade.name);
-                                        printf("%s attacks %s and does %d dmg.\n", sgrade.name, player.name, sgrade.ap);
+                                        printf("%s attacks %s and does %d dmg.\n\n\n", sgrade.name, player.name, sgrade.ap);
                                         player.hp -= sgrade.ap;
                                     }
                                 }
 
                             } while (temp == 0);
-                        }
-                        if (player.hp >= 0 && sgrade.hp <= 0)
-                        {
-                            printf("You have killed %s and gained 4xp points. \n", sgrade.name);
-                            player.xp += 20;
-                        }
-                        else if (player.hp <= 0 && sgrade.hp >= 0)
-                        {
-                            printf("%s has killed you, you lost 4xp points.\n", sgrade.name);
-                            player.xp -= 20;
-                        }
-                        if (loser == 1)
-                        {
-                            printf("You evaded the combat. you didn't lose or gain anything.\nJust lost your dignity...\n");
-                        }
-                        player.mp -= 1;
-                        check_levelUp(&player);
+                            if (player.hp < 0 || sgrade.hp < 0 || loser == 1)
+                            {
+                                system("clear");
+                                if (player.hp > 0 && sgrade.hp <= 0)
+                                {
+                                    printf("You have killed %s and gained 4xp points. \n", sgrade.name);
+                                    player.xp += 20;
+                                }
+                                else if (player.hp <= 0 && sgrade.hp > 0)
+                                {
+                                    printf("%s has killed you, you lost 4xp points.\n", sgrade.name);
+                                    player.xp -= 20;
+                                }
+                                if (loser == 1)
+                                {
+                                    printf("You evaded the combat. you didn't lose or gain anything.\nJust lost your dignity...\n");
+                                }
+                                player.mp -= 1;
+                                check_levelUp(&player);
+                            }
+
+                        } while (temp1 == 0);
                     }
                 }
 
-                printf("Status : \nLevel : %d\nxp : %d\nhp : %d\nap : %d\nmp : %d\n", player.level, player.xp, player.hp, player.ap, player.mp);
+                printf("Status : \nLevel : %d\nxp : %d\nhp : %d\nap : %d\nmp : %d\n\n\n", player.level, player.xp, player.hp, player.ap, player.mp);
             }
             else
             {
-                printf("\nYou do not have enough mp.\n");
+                printf("\nYou do not have enough mp.\n\n");
             }
             break;
         case 3:
@@ -432,8 +475,8 @@ int main()
             printf("Status : \nLevel : %d\nxp : %d\nhp : %d\nap : %d\nmp : %d\n", player.level, player.xp, player.hp, player.ap, player.mp);
             break;
         case 0:
-            printf("Thanks for playing ! Saving Player in file %s.txt\n",player.name);
-            save_game(&player,savethis);
+            printf("Thanks for playing ! Saving Player in file %s.txt\n", player.name);
+            save_game(&player, savethis);
             return 0;
             break;
         default:
@@ -464,7 +507,7 @@ int random_number(int min_num, int max_num)
     return result;
 }
 
-int check_levelUp(Personnage *data)
+void check_levelUp(Personnage *data)
 {
     data->level = 1 + (data->xp / 5);
     data->hp = 60 + (data->level * 10);
@@ -475,7 +518,7 @@ int check_levelUp(Personnage *data)
 void load_game(Personnage *data, char dataFile[20])
 {
     char str[20];
-    int xp, mp;
+    int xp, mp,lucky;
 
     // open the file
     FILE *f = fopen(dataFile, "r");
@@ -487,11 +530,13 @@ void load_game(Personnage *data, char dataFile[20])
     fscanf(f, "%s", str);
     fscanf(f, "%d", &xp);
     fscanf(f, "%d", &mp);
+    fscanf(f, "%d", &lucky);
     fclose(f); // close file
 
     strcpy(data->name, str);
     data->xp = xp;
     data->mp = mp;
+    data->lucky = lucky;
     check_levelUp(data);
 }
 void save_game(Personnage *data, char dataFile[20])
@@ -501,5 +546,6 @@ void save_game(Personnage *data, char dataFile[20])
     fprintf(f, "%s\n", data->name);
     fprintf(f, "%d\n", data->xp);
     fprintf(f, "%d\n", data->mp);
+    fprintf(f, "%d\n", data->lucky);
     fclose(f); // close file
 }
