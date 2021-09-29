@@ -161,17 +161,19 @@ int main()
                             if (strcmp(fightAnswer, "attack") == 0)
                             {
                                 temp = 1;
+                                printf("%s hp = %d, %s hp = %d.\n",bgrade.name, bgrade.hp, player.name,player.hp);
                                 printf("%s attacks %s and does %d dmg.\n", player.name, bgrade.name, player.ap);
                                 bgrade.hp -= player.ap;
-                                sleep(2);
+                                sleep(1);
                                 printf("It's %s's time to attack\n", bgrade.name);
                                 printf("%s attacks %s and does %d dmg.\n", bgrade.name, player.name, bgrade.ap);
-                                printf("%s hp = %d, %s hp = %d.\n",bgrade.name, bgrade.hp, player.name,player.hp);
                                 printf("\n\n\n");
+                                sleep(2);
                                 player.hp -= bgrade.ap;
                             }
                             if (strcmp(fightAnswer, "ult") == 0)
                             {
+                                temp = 1;
                                 if (powerUp == 1)
                                 {
                                     powerUp = 0;
@@ -485,7 +487,6 @@ int main()
     }
     return 0;
 }
-
 int random_number(int min_num, int max_num)
 {
     srand(time(NULL));
@@ -506,7 +507,6 @@ int random_number(int min_num, int max_num)
     result = (rand() % (hi_num - low_num)) + low_num;
     return result;
 }
-
 void check_levelUp(Personnage *data)
 {
     data->level = 1 + (data->xp / 5);
@@ -514,7 +514,6 @@ void check_levelUp(Personnage *data)
     data->ap = (data->level * 15);
     data->def = (data->level * 2);
 }
-
 void load_game(Personnage *data, char dataFile[20])
 {
     char str[20];
